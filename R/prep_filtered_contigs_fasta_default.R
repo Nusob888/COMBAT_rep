@@ -1,0 +1,129 @@
+##Combat phase I repertoire analysis
+##This script is to replicate the concatenation and conversion of all_contig.fasta repertoire files from COMBAT study to IMGT compatible fasta files. 
+#Author: Bo Sun
+#Group: Bashford-Rogers
+#Date: 2020-06-29
+
+setwd("/well/combat/users/vkh192/repertoire/")
+.libPaths(c( "~/R/3.4.3-openblas-0.2.18-omp-gcc5.4.0", .libPaths()))
+.libPaths(c("/well/combat/users/vkh192/INSTALLED_PROGRAMS/R_MODULES", .libPaths()))
+options(repos = 'http://cran.ma.imperial.ac.uk/')
+library(Biostrings)
+library(tidyverse)
+library(parallel)
+
+#get cores
+numCores = detectCores()
+#Working directory library
+wd <- list()
+
+#Commonly used paths in my working directory
+wd$data   <- "/well/combat/users/vkh192/repertoire/data/"
+wd$output <- "/well/combat/users/vkh192/repertoire/out/"
+wd$R <- "/well/combat/users/vkh192/repertoire/R/"
+
+#Get meta
+repmeta <- readr::read_tsv("/well/combat/projects/repertoire/singlecell/samples.metadata")
+colnames(repmeta) 
+
+repmeta$gplex <- gsub(".*_g","g",repmeta$`Sample Name`)
+repmeta$gplex<- gsub("_.*","",repmeta$gplex)
+
+head(repmeta$gplex)
+
+#Get directories
+dir_list <- list.files(path = "/well/combat/projects/repertoire/singlecell/default/10X-vdj/", pattern = "\\.fasta$", full.names = TRUE, recursive = TRUE)
+dir_list <- tibble(dir_list = dir_list)
+all_contig_dir<- dir_list %>% filter(grepl("filtered_contig", dir_list))
+head(all_contig_dir$dir_list)
+
+#Create repdir file that will be used as a hub for all metadata
+repdir <- list.files(path = "/well/combat/projects/repertoire/singlecell/default/10X-vdj/", pattern = "\\.csv$", full.names = TRUE, recursive = TRUE)
+repdir <- tibble(annotation_dir = repdir)
+repdir <- repdir %>% filter(grepl("filtered_contig_annotations", annotation_dir))
+repdir <- repdir %>% mutate(seq_ID = gsub(".*//", "", annotation_dir)) %>% mutate(seq_ID = gsub("\\/.*", "", seq_ID))
+
+#load all contig annotations to create rds file that we can query for isotype
+repdir$all_contig_annotations <- lapply(repdir$annotation_dir, function(x){data.table::fread(x)})
+repdir$numseqs<- sapply(repdir$all_contig_annotations, function(x){as.numeric(nrow(x))})
+repdir$celltype <- sapply(repdir$all_contig_annotations, function(x){x %>% select(chain) %>% unique})
+repdir <- repdir %>% left_join(repmeta, by = c("seq_ID" = "Sequencing ID"))
+repdir<- repdir %>% dplyr::rename(sample_name = `Sample Name`)
+repdir<- repdir %>% mutate(celltype = ifelse(grepl("TCR", sample_name), "TCR", ifelse(grepl("BCR", sample_name),"BCR","unknown")))
+repdir$fasta_dir <- all_contig_dir$dir_list
+
+saveRDS(repdir, paste0(wd$data, "repdir_default_all_contig.rds"))
+
+#Function to extract and prepare BCRs
+Getfastalist <- function(dir_list) {
+  Fastalist <- list()
+  for (i in 1:nrow(dir_list)){
+    sample <- paste0(dir_list$seq_ID)
+    Fastalist[[paste0(sample[i])]]<-readDNAStringSet(dir_list$fasta_dir)
+  }
+  return(Fastalist)
+}
+
+#Get DNAstringlist
+fasta<- mclapply(repdir$fasta_dir, function(x){readDNAStringSet(x)}, mc.cores=numCores)
+
+#Add suffix of seq ID
+names(fasta) <- repdir$seq_ID
+
+for (i in 1:length(fasta)) {
+  names(fasta[[i]]) <- paste(names(fasta[[i]]), names(fasta[i]), sep = "-")
+}
+
+#sanity check
+head(names(fasta[[1]]))
+
+#separate by celltype
+names(fasta) <- repdir$celltype
+TCR <- fasta[names(fasta) == "TCR"]
+BCR <- fasta[names(fasta) == "BCR"]
+
+#remove names prior to concat
+names(TCR) <- ""
+names(BCR) <- ""
+
+mergeTCR <- do.call(c, TCR)
+mergeBCR <- do.call(c, BCR)
+
+#Check lengths to decide need for chunking
+length(mergeTCR)
+length(mergeBCR)
+
+#Summarise width metrics of seqs
+summary(width(mergeTCR))
+summary(width(mergeTCR))
+
+#Function to chunk DNAstringsets
+chunkDNAstringset <- function(stringset){
+  chunk <- 1000000
+  n <- length(stringset)
+  r  <- rep(1:ceiling(n/chunk),each=chunk)[1:n]
+  split <- split(stringset,r)
+  return(split)
+}
+
+#Get chunks
+TCRsplit <- chunkDNAstringset(mergeTCR)
+BCRsplit <- chunkDNAstringset(mergeBCR)
+
+#sanity check
+TCRsplit[[1]]
+BCRsplit[[1]]
+
+#write fasta files
+
+for (i in 1:length(TCRsplit)){
+  filename <- paste(names(TCRsplit), "fasta", sep = "_COMBAT_TCR_all_contig.")
+  writeXStringSet(TCRsplit[[i]], paste0(wd$output, filename[i]), append=FALSE,
+                  compress=FALSE, compression_level=NA, format="fasta")
+}
+
+for (i in 1:length(BCRsplit)){
+  filename <- paste(names(BCRsplit), "fasta", sep = "_COMBAT_BCR_all_contig.")
+  writeXStringSet(BCRsplit[[i]], paste0(wd$output, filename[i]), append=FALSE,
+                  compress=FALSE, compression_level=NA, format="fasta")
+}

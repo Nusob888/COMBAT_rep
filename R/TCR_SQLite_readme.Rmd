@@ -1,6 +1,5 @@
 ---
 title: "Readme for TCR SQLite database"
-output: html_notebook
 ---
 
 This is an explanation of how to make a RSQLite query to access the IMGT outputs for the TCR sequences. Note these are unformatted. </br>

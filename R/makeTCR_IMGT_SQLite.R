@@ -16,7 +16,8 @@ TCRdir <- TCRdir %>%
   mutate(names = gsub(".*/", "", directory)) %>% mutate(names = gsub(".txt", "", names)) %>% 
   mutate(group = gsub(".*filtered", "filtered", directory)) %>% mutate(group = gsub(".txt", "", group)) %>% 
   mutate(group = gsub("/.*", "", group)) %>%
-  separate(group, c("cellranger_out", "index_corr"), "_") 
+  separate(group, c("cellranger_out", "index_corr"), "_") %>%
+  mutate(index_corr = gsub("2","", index_corr))
 
 #read in IMGT txt files as a column list of tables
 TCRdir$tables <- mclapply(TCRdir$directory, function(x){readr::read_tsv(x)}, mc.cores = numCores)
@@ -30,7 +31,7 @@ TCRdir %>% select(index_corr) %>% unique
 
 #Parse default (non-index corrected IMGT outs)
 defaultlist <- TCRdir %>% 
-  filter(grepl("default|default2", index_corr)) %>% 
+  filter(grepl("default", index_corr)) %>% 
   group_by(names) %>% 
   arrange(desc(names)) %>% 
   group_split() %>% 
@@ -44,7 +45,7 @@ for (i in 1:length(defaultlist)){
 
 ##Parse dehop (index corrected by lane IMGT outs)
 dehoplist <- TCRdir %>% 
-  filter(grepl("dehop$|dehop2$", index_corr)) %>% 
+  filter(grepl("dehop$", index_corr)) %>% 
   group_by(names) %>% 
   arrange(desc(names)) %>% 
   group_split() %>% 
@@ -60,7 +61,7 @@ for (i in 1:length(dehoplist)){
 
 ##Parse dehopsep (index corrected by lane IMGT outs)
 dehopseplist <- TCRdir %>% 
-  filter(grepl("dehopsep$|dehopsep2$", index_corr)) %>% 
+  filter(grepl("dehopsep$", index_corr)) %>% 
   group_by(names) %>% 
   arrange(desc(names)) %>% 
   group_split() %>% 

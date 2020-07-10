@@ -58,12 +58,12 @@ BCR <- repdir %>% filter(grepl("BCR", celltype))
 ##Create SQLitedb
 
 library(RSQLite)
-conn <- dbConnect(RSQLite::SQLite(), "/well/combat/projects/repertoire/10xout/TCRdb/TCR10x.db")
-lapply(TCR$all_contig_annotations, function(x){ RSQLite::dbWriteTable(conn,"filtered_contig_annotations", x, append = TRUE)})
+conn <- dbConnect(RSQLite::SQLite(), "/well/combat/projects/repertoire/imgtout/TCR/TCRdb/TCRIMGT.db")
+lapply(TCR$all_contig_annotations, function(x){ RSQLite::dbWriteTable(conn,"10X_filtered_contig_annotations", x, append = TRUE)})
 dbListTables(conn)
 dbDisconnect(conn)
 
-conn <- dbConnect(RSQLite::SQLite(), "/well/combat/projects/repertoire/10xout/BCRdb/BCR10x.db")
-lapply(BCR$all_contig_annotations, function(x){ dbWriteTable(conn,"filtered_contig_annotations", x, append = TRUE)})
+conn <- dbConnect(RSQLite::SQLite(), "/well/combat/projects/repertoire/imgtout/BCR/BCRdb/BCRIMGT.db")
+lapply(BCR$all_contig_annotations, function(x){ dbWriteTable(conn,"10X_filtered_contig_annotations", x, append = TRUE)})
 dbListTables(conn)
 dbDisconnect(conn)

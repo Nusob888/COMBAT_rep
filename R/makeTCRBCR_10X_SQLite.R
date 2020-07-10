@@ -1,7 +1,7 @@
 ##Script to generate SQLite database for 10Xvdj annotations
 #Author: Bo Sun
 #Group: Bashford-Rogers
-#Date: 2020-07-010
+#Date: 2020-07-10
 
 library(tidyverse)
 library(parallel)

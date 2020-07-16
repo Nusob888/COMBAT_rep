@@ -1,14 +1,15 @@
-filterHeavycontigs<- function(test){
-  empty <- data.frame(barcode_plex=NA,
-                      IMGTchain=NA, 
+filtercontigs<- function(test){
+  empty <- data.frame(barcode_by_sample=NA,
+                      locus=NA, 
                       umis=NA, 
                       umi_ranks=NA, 
+                      contig_id=NA,
                       VDJ_group=NA, 
                       c_gene=NA)
-  
+ 
   #Parse chains
-  Heavy <- test %>% filter(grepl("IGH", IMGTchain))
-  Light <- test %>% filter(grepl("IGK|IGL", IMGTchain))
+  Heavy <- test %>% filter(grepl("IGH", locus))
+  Light <- test %>% filter(grepl("IGK|IGL", locus))
 
 #Process Heavy chain
  if(exists("Heavy")){
@@ -28,7 +29,7 @@ filterHeavycontigs<- function(test){
               filter(grepl("IGHM|IGHD", c_gene)) #filter VJ/cdr3 matches that are IGHM or IGHD, thereby for top IGHMs, keeping paired IGHD expression
           }else{
             x <- empty
-            print(paste("No IGHM assignments possible for contig:", Heavy$barcode_plex[i], ", potential doublet", sep="")) 
+            print(paste("No IGHM assignments possible for contig:", Heavy$barcode_by_sample[i], ", potential doublet", sep="")) 
           }
         }else if(test$c_gene[i] != "IGHM"){# conditional selection of non_IGHM rank1s
           if(Heavy[c(Heavy$umi_ranks== "1"), c("VDJ_group")] == Heavy[c(Heavy$umi_ranks== "2"), c("VDJ_group")]){
@@ -39,7 +40,7 @@ filterHeavycontigs<- function(test){
               filter(grepl(paste(Heavy$VDJ_group[i]), VDJ_group)) 
           }else{
             x <- empty
-            print(paste("No IGHG assignments possible for contig:", Heavy$barcode_plex[i], ", potential doublet", sep=""))  
+            print(paste("No IGHG assignments possible for contig:", Heavy$barcode_by_sample[i], ", potential doublet", sep=""))  
           }
         }
      }
@@ -59,7 +60,7 @@ if(exists("Light")){
         filter(grepl(paste(Light$VDJ_group[i]), VDJ_group)) #filter VJ/cdr3 matches that are IGHM or IGHD, thereby for top IGHMs, keeping paired IGHD expression
     }else{
       y <- empty
-      print(paste("No IGK/L assignments possible for contig:", Light$barcode_plex[i], ", potential doublet", sep=""))  
+      print(paste("No IGK/L assignments possible for contig:", Light$barcode_by_sample[i], ", potential doublet", sep=""))  
     }
     }
   }

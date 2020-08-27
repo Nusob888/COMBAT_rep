@@ -3,6 +3,11 @@
 ##Bashford-Rogers Group
 ##Date: 2020-08-27
 
+require(tidyverse)
+require(pathwork)
+require(ggsci)
+require(RColorBrewer)
+
 #Load clonally assigned heavy chains----
 #Clones were assigned using BcellR- unpublished single cell repertoire analysis tool (Sun et al)
 #In brief, VJ nucleotide sequence was fuzzy clustered using cdhit, then normalised levenhsteins distances were calculated pairwise across all CDR3s

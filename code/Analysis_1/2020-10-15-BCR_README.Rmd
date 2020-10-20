@@ -1,0 +1,190 @@
+---
+title: "BCR release v001 prelim for annotation team"
+date: "2020-10-20"
+author: "Bo Sun - Bashford Rogers Group, Wellcome Centre of Human Genetics"
+output:
+  html_document:
+    df_print: paged
+---
+
+This is a markdown to summarise the layout for the following tables: <br/>
+
+- Contig quality control ("/well/combat/shared/B_chains_prelim/bcr_release_v001_contig_qc.csv.gz")<br/>
+
+- Heavy chain annotations ("/well/combat/shared/B_chains_prelim/bcr_release_v001_HC_table.csv.gz")<br/>
+
+- Light chain annotations ("/well/combat/shared/B_chains_prelim/bcr_release_v001_LC_table.csv.gz")<br/>
+
+- Merged chain annotations ("/well/combat/shared/B_chains_prelim/bcr_release_v001_chainmerge_table.csv.gz")<br/>
+
+- Heavy chain ranked umis - *for annotation team use* ("/well/combat/shared/B_chains_prelim/bcr_release_v001_umis_HC.csv.gz")<br/>
+
+- Light chain ranked umis - *for annotation team use* ("/well/combat/shared/B_chains_prelim/bcr_release_v001_umis_LC.csv.gz")<br/>
+
+
+```{r, echo=FALSE, warning = FALSE, message=FALSE}
+library(tidyverse)
+library(patchwork)
+library(ggsci)
+
+```
+
+
+```{r, echo=FALSE, warning = FALSE, message=FALSE}
+contig_qc <- data.table::fread("/Users/bosun/Documents/DPhil/Projects/COMBAT/Repertoire/data/bcr_release_v001_contig_qc.csv.gz") %>% select(-V1)
+HC <- data.table::fread("/Users/bosun/Documents/DPhil/Projects/COMBAT/Repertoire/data/bcr_release_v001_HC_table.csv.gz") %>% select(-V1) 
+LC <- data.table::fread("/Users/bosun/Documents/DPhil/Projects/COMBAT/Repertoire/data/bcr_release_v001_LC_table.csv.gz") %>% select(-V1)
+merge <- data.table::fread("/Users/bosun/Documents/DPhil/Projects/COMBAT/Repertoire/data/bcr_release_v001_chainmerge_table.csv.gz") %>% select(-V1)
+HC_all <- data.table::fread("/Users/bosun/Documents/DPhil/Projects/COMBAT/Repertoire/data/bcr_release_v001_umis_HC.csv.gz") %>% select(-V1)
+LC_all <- data.table::fread("/Users/bosun/Documents/DPhil/Projects/COMBAT/Repertoire/data/bcr_release_v001_umis_LC.csv.gz") %>% select(-V1)
+
+
+```
+
+# Contig quality control
+Procedure: <br/>
+
+- All contigs are assigned a rank order per cell barcode after splitting into Heavy and Light chain contigs. Where there are more than 1 contigs per Heavy or Light chain locus, the top two ranked contigs are selected and a rank UMI ratio is calculated (rank2_umis/rank1_umis). <br/>
+
+- The knee point of the log ranked UMI ratios is then taken (lower bound ratio set as 0.1) as the threshold for assigning contig confidence as a VDJ singlet vs doublet. Inflection point was determined as a ratio of 0.125. <br/>
+
+- Where the clonal identity (identical VJpairing and CDR3 aa sequence) is matched for rank1 and rank2 contigs that are IGHM/IGHD, both contigs are retained. <br/>
+
+- This table contains all productive cellranger-filtered contigs that indexed to a study ID. This includes all possible barcodes including those from other cell type annotations and can facilitate detection of T/B VDJ doublets. <br/>
+
+# Column description
+
+1) barcode_seq <br/>
+- Concatenated barcode and gplex IDs<br/>
+
+2) locus<br/>
+- Heavy vs. Light chain<br/>
+
+3) contig_id<br/>
+- Assembled contig_ids, unique per cell barcode<br/>
+
+4) contig_qc<br/>
+- **singleton** = only one assembled contig passed cellranger quality control per cell <br/>
+- **passed_qc** = more than 2 contigs were detected, but the ratio of rank2_umis/rank1_umis was below the threshold of 0.125 and thus has sufficient confidence to be called a singlet. <br/>
+- **potential_doublet** = more than 2 contigs were detected and the ratio of rank2_umis/rank1_umis was above the cutoff of 0.125 and thus had insufficient confidence to be called a singlet. <br/>
+
+5) vdj_complete<br/>
+- TRUE or FALSE<br/>
+- Here TRUE are contigs where no truncations were detected in the 5' and 3' of the VDJ region. <br/>
+*For the BCR analysis we are only using complete VDJs to allow for robust mutation analysis*<br/>
+
+```{r}
+head(contig_qc)
+```
+
+# VDJ annotation tables
+
+Procedure: <br/>
+
+- Filtered fasta file output from cellranger were aggregated and split into files of length 1E06. These were run on [IMGT High V-Quest](http://www.imgt.org/IMGTindex/IMGTHighV-QUEST.php). <br/>
+
+- Outputs were parsed with custom function from script Parse_IMGT.R (adapted from BCellR - Bo Sun unpublished); this function removes non-productive contigs and concatenates all IMGToutputs utilising only columns that were heuristically deemed as relevant to the planned quality control/analysis. <br/>
+
+- Metadata such as c_gene (Ig isotype/subclass), umis, reads etc. were gathered from cellranger filtered annotations and indexed on barcode and gplex. <br/>
+
+Structure:<br/>
+
+Annotations are split across 3 tables:<br/>
+
+- Heavy chain: bcr_release_v001_HC_table.csv.gz <br/>
+
+- Light chain: bcr_release_v001_LC_table.csv.gz<br/>
+
+- Merged: bcr_release_v001_chainmerge_table.csv.gz<br/>
+
+Preprocessing: </br>
+
+- The heavy chain table has had potential doublets removed as only annotations used in the BCR analysis are kept. Where cell contigs "passed_qc", the top ranked contig was kept </br>
+
+- The light chain table has the same preprocessing as the heavy, but potential doublets were kept (on the basis that 1% of B cells may express dual light chains). These may be considered "low priority" as the confidence for physiological relevance is less robust. </br>
+
+- For the merged table, both tables were merged using barcode and gplex (barcode_seq) for indexing. Respective annotations for heavy or light chains were labelled with column name suffixes "_HC" or "_LC" to aid identification of specific chain annotations. </br>
+
+For detailed IMGT annotation descriptions please refere to: [IMGT documentation](http://www.imgt.org/IMGT_vquest/user_guide). <br/>
+
+Anything that remains unclear please contact Bo Sun, Bashford-Rogers Group, WHG:  [bo.sun@well.ox.ac.uk](mailto:bo.sun@well.ox.ac.uk?subject=[COMBAT]%20BCR%20release%20v001)
+
+```{r}
+head(HC)
+head(LC)
+head(merge)
+
+```
+
+
+# Additional files for annotation team
+Additional Heavy and Light chain ranked contig (based on umis) tables are provided for annotation team's usage for doublet identification. <br/>
+
+Contig ranks are split across two tables: <br/>
+
+- Heavy chain - bcr_release_v001_umis_HC.csv.gz <br/>
+
+- Light chain - bcr_release_v001_umis_LC.csv.gz <br/>
+
+*Only the top 2 ranked umis were kept for annotation team, as lower ranked umis correspond to ambient RNA*
+
+```{r}
+head(HC_all)
+head(LC_all)
+```
+
+In order to identify plasmablast/plasma cells from non-plasma B cells, immunoglobulin(Ig) gene umis can be plotted either has a histogram, or against pct_immunoglobin (metric from preprocessing pipeline):<br/>
+
+- Non-plasmablast/plasma cells are typically low in Ig gene umis (ranging from ~3-100) and this correlates nicely with GEX pct_immunoglobulin. 
+
+- Plasmablast/plasma cells are typically high in Ig gene umis >100. </br>
+
+```{r}
+A <- HC_all %>% 
+  mutate(umi_ranks = as.factor(umi_ranks)) %>%
+  ggplot(aes(pct_immunoglobin + 0.1, fill = umi_ranks)) +
+  geom_histogram(bins = 50)+
+  scale_x_log10()+
+  ggsci::scale_fill_d3()
+
+B <- HC_all %>% 
+  mutate(umi_ranks = as.factor(umi_ranks)) %>%
+  ggplot(aes(umis_HC + 0.1, fill = umi_ranks)) +
+  geom_histogram(bins  =50)+
+  scale_x_log10()+
+  ggsci::scale_fill_d3()
+
+C <- HC_all %>% 
+  mutate(umi_ranks = as.factor(umi_ranks)) %>%
+  ggplot(aes(umis_HC + 0.1, pct_immunoglobin + 0.1, color = umi_ranks)) +
+  geom_point(size = 0.1)+
+  scale_y_log10()+
+  scale_x_log10()+
+  ggsci::scale_color_d3()
+
+D <-  HC_all %>% 
+  mutate(umi_ranks = as.factor(umi_ranks)) %>%
+  filter(contig_qc != "potential_doublet") %>%
+  ggplot(aes(umis_HC + 0.1, pct_immunoglobin + 0.1, color=umi_ranks)) +
+  geom_point(size = 0.1)+
+  scale_y_log10()+
+  scale_x_log10()+
+  ggsci::scale_color_d3()
+
+(A+B)/(C+D)+ plot_annotation(tag_levels = 'A')
+```
+
+**Figure 1.** *Only Heavy chain data is shown for simplicity but Light chain data follows the same distributions*.*All axis are log scaled*. (A) Histogram of pct_immunoglobin (Heavy chain) derived from GEX data for all cells with a productive VDJ from cellranger output. (B) Histogram of umis for productive Heavy chain contigs. (C) pct_immunoglobin vs umis_HC for all ranked contigs; colored by ranked contigs based on umis (1 = contig associated with highest umis). (D) pct_immunoglobin vs umis_HC for all contigs that passed qc. 
+
+
+
+
+
+
+
+
+
+
+
+
+

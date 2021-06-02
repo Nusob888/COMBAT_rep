@@ -1,0 +1,5 @@
+pseudobulk,Effect,DFn,DFd,F,p,p<.05,ges
+B.NAIVE,Source_abrev,5,78,0.442,0.818,,0.028
+B.INT,Source_abrev,5,76,1.58,0.176,,0.094
+B.MEM,Source_abrev,5,74,0.567,0.725,,0.037
+PB,Source_abrev,5,77,4.523,0.001,*,0.227

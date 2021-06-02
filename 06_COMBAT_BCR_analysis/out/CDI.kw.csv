@@ -1,0 +1,5 @@
+pseudobulk,.y.,n,statistic,df,p,method
+B.NAIVE,mean.CDI,84,3.103030671000228,5,0.684,Kruskal-Wallis
+B.INT,mean.CDI,82,9.83373590718404,5,0.0801,Kruskal-Wallis
+B.MEM,mean.CDI,80,2.8710513221571596,5,0.72,Kruskal-Wallis
+PB,mean.CDI,83,26.12132890127956,5,8.45e-5,Kruskal-Wallis

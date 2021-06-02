@@ -1,0 +1,5 @@
+pseudobulk,.y.,n,statistic,df,p,method
+B.NAIVE,mean.shannon,84,5.51277310924371,5,0.357,Kruskal-Wallis
+B.INT,mean.shannon,82,4.248081513480571,5,0.514,Kruskal-Wallis
+B.MEM,mean.shannon,80,4.424168549530378,5,0.49,Kruskal-Wallis
+PB,mean.shannon,83,4.317597663380752,5,0.505,Kruskal-Wallis

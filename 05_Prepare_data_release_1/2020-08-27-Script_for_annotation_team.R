@@ -1,7 +1,7 @@
 ##Script to generate meta data from BCR repertoire to guide clustering annotations
-##Bo Sun
-##Bashford-Rogers Group
-##Date: 2020-08-27
+##Author: Bo Sun
+##Lab: Bashford Rogers
+##Institute: University of Oxford
 
 require(tidyverse)
 require(pathwork)

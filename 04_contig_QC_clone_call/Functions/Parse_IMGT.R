@@ -1,4 +1,7 @@
 #Code to parse IMGT outputs for BCR
+##Author: Bo Sun
+##Lab: Bashford Rogers
+##Institute: University of Oxford
 
 #' @importFrom magrittr %>%
 #' @importFrom  tidyr separate

@@ -1,3 +1,8 @@
+##Script to process data for handover to annotation team. 
+##Author: Bo Sun
+##Lab: Bashford Rogers
+##Institute: University of Oxford
+
 setwd("/well/combat/users/vkh192/repertoire/")
 .libPaths(c( "~/R/3.4.3-openblas-0.2.18-omp-gcc5.4.0", .libPaths()))
 .libPaths(c("/well/combat/users/vkh192/INSTALLED_PROGRAMS/R_MODULES", .libPaths()))

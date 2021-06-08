@@ -5,8 +5,7 @@
 
 ## Author: Bo Sun
 ## Group: Bashford-Rogers
-## Usage: Please do not reproduce this code outside of the COMBAT environment until official publication. 
-## If code is to be reproduced/adapted for other works, please aknowledge code authorship, or cite the BCellR package (if package has been formally released at the time of reproduction) 
+## Usage: If code is to be reproduced/adapted for other works, please aknowledge code authorship, or cite the BCellR package (if package has been formally released at the time of reproduction) 
 
 #'@importFrom Biostrings DNAStringSet
 #'@importFrom Biostrings writeXStringSet

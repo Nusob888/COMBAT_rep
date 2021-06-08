@@ -1,6 +1,8 @@
 ## Script to replicate generation of:
 # contig_qc metrics
-# 
+##Author: Bo Sun
+##Lab: Bashford Rogers
+##Institute: University of Oxford
 
 
 setwd("/well/combat/users/vkh192/repertoire/")

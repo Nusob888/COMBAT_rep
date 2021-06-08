@@ -1,4 +1,8 @@
 #Script to check annotation for annotation team
+##Author: Bo Sun
+##Lab: Bashford Rogers
+##Institute: University of Oxford
+
 #Load annotation team data
 anno <- readr::read_csv("/well/combat/users/vkh192/repertoire/data/b_cell_reannotation_all_barcodes.csv")
 banno <- anno %>% filter(subset=="D")

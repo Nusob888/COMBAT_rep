@@ -7,6 +7,9 @@ These are the scripts used for the preprocessing and quality control of the BCR/
 
 Analysis scripts are specific for the scRNA-seq VDJ data show in Figure 5 and Supplementary Figure 7. <br/>
 
+![alt text](https://github.com/Nusob888/COMBAT_rep/blob/master/Figures/Figure_5.png)
+![alt text](https://github.com/Nusob888/COMBAT_rep/blob/master/Figures/Figure_S7.png)
+
 Due to the complexity of the original data storage structures, scripts are not an enclosed analysis and may not be directly applicable to public data releases. If you would like to discuss any aspect of the scripts for reproduction of this analysis - or for academic discussion/collaboration - please do not hesitate to contact me either via the issues tab, or via email: [bo.sun@well.ox.ac.uk](bo.sun@well.ox.ac.uk)
 
 

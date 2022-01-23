@@ -49,3 +49,37 @@ write.csv(Heavy, "/well/combat/users/vkh192/repertoire/data/b_cell_reannotation_
 nrow(anno)
 nrow(Heavy)
 
+
+
+
+
+
+##Sofija data
+caspr2db <- data.table::fread("data/2020-07-26-Uptodate_CASPR2db_noseq-v2.txt", na.strings = c("NA", ""), stringsAsFactors = FALSE)
+
+
+caspr2db %>%
+  mutate(mAb_ID = Sequence.ID) %>%
+  mutate(mAb_ID= factor(mAb_ID, levels=c("E04","E04R", "E06", "E07", "E07R", "H01", "H01R", "H02" ,"H02R",
+                                         "E08", "E08R", "E09", "E09R"))) %>%
+  filter(!grepl("R", mAb_ID))%>%
+  select(mAb_ID,Subtype, Sofija_human_end_titer_1, Sofija_mouse_end_titer_1,`Specificity_Bo_C2/C4_swap`) %>%
+  reshape2::melt(id.vars=c("mAb_ID", "Subtype", "Specificity_Bo_C2/C4_swap")) %>%
+  unique %>%
+  filter(!is.na(value)) %>%
+  mutate(variable = ifelse(grepl("human", variable), "Human", "Mouse")) %>%
+  ggplot(aes(variable, value, group=mAb_ID))+
+  geom_line(aes(group=mAb_ID), alpha=0.5, linetype="dashed")+
+  geom_point(shape=23,size=2, color="black",aes(fill=mAb_ID), fill="black")+
+  scale_y_log10()+
+  facet_grid( vars(`Specificity_Bo_C2/C4_swap`),vars(mAb_ID))+
+  ylab("log10 end-point titer (1:X)")+
+  annotation_logticks(sides = "l", size=0.1, outside = FALSE) +
+  xlab("")
+colnames(caspr2db)
+
+Disc <- ggmsa("data/_out.210806011828332eNrjl3GnEL9g1owqYhTcClsfnormal.fasta", 35, 185, color = "Clustal", font = NULL, seq_name = T ) + geom_msaBar()
+Disc
+Lam3 <- ggmsa("data/_out.210806011828332eNrjl3GnEL9g1owqYhTcClsfnormal.fasta", 799, 963, color = "Clustal", font = NULL, char_width = 0.5, seq_name = T )+ geom_msaBar()
+Lam3
+
